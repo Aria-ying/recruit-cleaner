@@ -180,6 +180,39 @@ python main.py run -i data/sample.csv -d output
 
 ---
 
+## 推送到 GitHub
+
+本仓库的 4 次 PR 在本地已按 `--no-ff` 合并进 `main`，分支也都还在。推到 GitHub 两步走：
+
+**1）在 GitHub 网页上建一个空仓库**（不要勾 README / .gitignore / license），然后：
+
+```bash
+bash scripts/push_github.sh https://github.com/<用户名>/<仓库名>.git
+```
+
+脚本会推 `main` 和 4 个 `feature/*` 分支，并直接打印出开 PR 的链接。
+
+<details>
+<summary>不想用脚本，手动推的话</summary>
+
+```bash
+git remote add origin https://github.com/<用户名>/<仓库名>.git
+git push -u origin main
+git push origin feature/1-overview
+git push origin feature/2-validate
+git push origin feature/3-stats
+git push origin feature/4-cli-ux
+```
+
+</details>
+
+**2）开 PR**：打开脚本打印的 4 个 `compare` 链接，或者用 `gh pr create` 四条命令，都行。
+PR 标题建议直接用「需求1：读入与概览」这种，body 指回 README 对应小节。
+
+> 必须先推分支再开 PR——GitHub 的 PR 是拿远端分支比对的，本地有分支不算。
+
+---
+
 ## 输入格式
 
 必需列（缺任何一列会直接报错并提示实际表头）：
@@ -269,6 +302,7 @@ recruit-csv-tool/
 │   ├── stats.py             # 分组统计与汇总（需求3）
 │   └── report.py            # 校验报告与规则速查表
 ├── data/sample.csv          # 示例数据（含脏数据）
+├── scripts/push_github.sh   # 推送到 GitHub 并打印开 PR 的链接
 └── tests/                   # unittest 测试（59 个）
 ```
 
