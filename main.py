@@ -40,7 +40,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_overview.add_argument("--input", "-i", required=True, help="报名表 CSV 路径")
 
     p_check = sub.add_parser("check", help="校验并导出问题清单（需求 2）")
-    p_check.add_argument("--input", "-i", required=True, help="报名表 CSV 路径")
+    # --explain 不需要输入文件，所以 --input 改为按需必填（见下方校验）
+    p_check.add_argument("--input", "-i", help="报名表 CSV 路径")
     p_check.add_argument(
         "--issues-out", "-o", default="output/issues.csv", help="问题清单输出路径"
     )
@@ -71,8 +72,20 @@ def main(argv: list[str] | None = None) -> int:
 
     args = _build_parser().parse_args(argv)
 
+    def load(path: str):
+        """读入 CSV，把常见的输入错误翻译成人话而不是 traceback。"""
+        try:
+            return read_csv(path)
+        except FileNotFoundError as exc:
+            print(f"错误：{exc}", file=sys.stderr)
+            print("检查一下 --input 路径是不是写错了。", file=sys.stderr)
+        except ValueError as exc:
+            print(f"错误：{exc}", file=sys.stderr)
+            print("CSV 表头必须包含：姓名、学号、邮箱、志愿1、志愿2、推荐人。", file=sys.stderr)
+        raise SystemExit(2)
+
     if args.command == "overview":
-        ds = read_csv(args.input)
+        ds = load(args.input)
         print_overview(ds)
         return 0
 
@@ -80,7 +93,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.explain:
             print_rules()
             return 0
-        ds = read_csv(args.input)
+        if not args.input:
+            _build_parser().error("check 需要 --input，或改用 --explain 只看规则表")
+        ds = load(args.input)
         reports = validate_dataset(ds, args.min_sid_length, args.max_sid_length)
         # 原文件只读：问题清单写到独立路径，绝不回写 --input
         issues_path = write_issues_csv(args.issues_out, reports)
@@ -97,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
             out_clean = args.clean_out
             out_summary = args.summary_out
 
-        ds = read_csv(args.input)
+        ds = load(args.input)
 
         if args.command == "run":
             print_overview(ds)

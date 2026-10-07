@@ -15,6 +15,7 @@
 | #1 | `feature/1-overview` | 读入 CSV + 打印概览 | ✅ 已合并 |
 | #2 | `feature/2-validate` | 校验清洗 + 问题清单导出 | ✅ 已合并 |
 | #3 | `feature/3-stats` | 统计汇总 + 干净数据导出 | ✅ 已合并 |
+| #4 | `feature/4-cli-ux` | 命令行报错友好化 + CLI 测试 | ✅ 已合并 |
 
 ---
 
@@ -268,7 +269,22 @@ recruit-csv-tool/
 │   ├── stats.py             # 分组统计与汇总（需求3）
 │   └── report.py            # 校验报告与规则速查表
 ├── data/sample.csv          # 示例数据（含脏数据）
-└── tests/                   # unittest 测试（53 个）
+└── tests/                   # unittest 测试（59 个）
+```
+
+## 错误提示
+
+输入有问题时不甩 traceback，而是打印人话并以退出码 2 结束：
+
+```
+$ python main.py overview -i 写错的路径.csv
+错误：找不到报名表文件：写错的路径.csv
+检查一下 --input 路径是不是写错了。
+
+$ python main.py overview -i 少了几列的.csv
+错误：报名表缺少必需的列：邮箱、志愿1、志愿2、推荐人
+实际表头：姓名、学号
+CSV 表头必须包含：姓名、学号、邮箱、志愿1、志愿2、推荐人。
 ```
 
 ## 跑测试
@@ -276,3 +292,6 @@ recruit-csv-tool/
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+59 个用例，覆盖读入、空值判定、各条校验规则、统计口径、导出表头和 CLI 退出码。
+其中 `test_run_never_touches_input_file` 会校验「跑完之后原始 CSV 一字未改」。
