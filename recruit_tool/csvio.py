@@ -53,6 +53,11 @@ def is_blank(value: Optional[str]) -> bool:
     return str(value).strip() in PLACEHOLDER_TOKENS
 
 
+def format_ratio(part: int, total: int) -> str:
+    """格式化占比，total 为 0 时避免除零。"""
+    return "0.0%" if total == 0 else "{:.1f}%".format(part * 100.0 / total)
+
+
 def detect_encoding(path: str, candidates: Sequence[str] = ENCODING_CANDIDATES) -> str:
     """用候选编码逐个试读整个文件，第一个能完整解码的胜出。"""
     with open(path, "rb") as fh:
