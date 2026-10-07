@@ -112,8 +112,10 @@ def summary_rows(rows: Sequence[Dict[str, str]]) -> List[Dict[str, str]]:
     return out
 
 
-def print_summary(rows: Sequence[Dict[str, str]], stream=sys.stdout) -> Dict[str, Any]:
-    """打印汇总表，同时返回结构化结果。"""
+def print_summary(rows: Sequence[Dict[str, str]], stream=None) -> Dict[str, Any]:
+    """打印汇总表，同时返回结构化结果。stream 在调用时解析，便于测试捕获。"""
+    if stream is None:
+        stream = sys.stdout
     info = build_summary(rows)
     total = info["total"]
 

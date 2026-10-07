@@ -19,9 +19,11 @@ def count_by_code(reports: Sequence[RowReport]) -> Dict[str, int]:
 def print_check_report(
     reports: Sequence[RowReport],
     issues_path: str | None = None,
-    stream=sys.stdout,
+    stream=None,
 ) -> Dict[str, int]:
-    """打印校验报告，返回各问题代码的命中次数。"""
+    """打印校验报告，返回各问题代码的命中次数。stream 在调用时解析，便于测试捕获。"""
+    if stream is None:
+        stream = sys.stdout
     counts = count_by_code(reports)
     error_rows = [r for r in reports if r.severity == ERROR]
     warn_rows = [r for r in reports if r.severity == WARNING]
@@ -60,8 +62,10 @@ def print_check_report(
     return counts
 
 
-def print_rules(stream=sys.stdout) -> None:
+def print_rules(stream=None) -> None:
     """打印规则速查表（--explain）。"""
+    if stream is None:
+        stream = sys.stdout
     print("校验规则速查表", file=stream)
     print("E = 错误，该行不会进入干净数据；W = 警告，仅提示", file=stream)
     print(file=stream)

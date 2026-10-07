@@ -33,8 +33,14 @@ def _ratio(part: int, total: int) -> str:
     return format_ratio(part, total)
 
 
-def print_overview(ds: Dataset, stream=sys.stdout) -> Dict[str, Any]:
-    """打印人类可读的概览，同时返回结构化结果。"""
+def print_overview(ds: Dataset, stream=None) -> Dict[str, Any]:
+    """打印人类可读的概览，同时返回结构化结果。
+
+    stream 默认在**调用时**解析 sys.stdout——写成默认参数会在 import 时就绑定死，
+    测试里的 redirect_stdout 就抓不到输出了。
+    """
+    if stream is None:
+        stream = sys.stdout
     info = build_overview(ds)
     total = info["row_count"]
 
