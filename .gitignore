@@ -19,3 +19,10 @@ build/
 .idea/
 .DS_Store
 Thumbs.db
+
+# 本机一键脚本（含本地路径，不进仓库）
+*.bat
+
+# SSH 私钥 / 本地凭据，绝不能提交
+.ssh/
+.gh_token
