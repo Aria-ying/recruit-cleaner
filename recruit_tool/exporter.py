@@ -6,6 +6,8 @@ import csv
 import os
 from typing import Dict, List, Sequence
 
+from .csvio import is_blank
+from .stats import SUMMARY_COLUMNS, clean_export_columns, summary_rows
 from .validate import RowReport
 
 #: 问题清单的列：先给人看的诊断信息，再是原始字段，方便对照着改。
@@ -60,3 +62,35 @@ def issue_rows(reports: Sequence[RowReport]) -> List[Dict[str, str]]:
 
 def write_issues_csv(path: str, reports: Sequence[RowReport]) -> str:
     return write_csv(path, ISSUE_COLUMNS, issue_rows(reports))
+
+
+def normalize_clean_row(row: Dict[str, str]) -> Dict[str, str]:
+    """干净数据的归一化。两件事：
+
+    1. 占位符（``-`` ``N/A`` ``无`` …）统一写成空串——既然判定它们是「没填」，
+       导出时就不该还留着一个连下游 Excel 都会当成真值的 ``-``。
+    2. 邮箱域名转小写——校验时说「已按小写处理」，导出时就得真这么做。
+
+    返回新 dict，不改动传入的行。
+    """
+    out: Dict[str, str] = {}
+    for key, value in row.items():
+        if key == "__row_no__":
+            continue
+        v = "" if is_blank(value) else value
+        if key == "邮箱" and "@" in v:
+            local, _, domain = v.rpartition("@")
+            v = f"{local}@{domain.lower()}"
+        out[key] = v
+    return out
+
+
+def write_clean_csv(path: str, columns: Sequence[str], rows: Sequence[Dict[str, str]]) -> str:
+    """导出清洗后的干净数据：剔除内部行号列，并做归一化。"""
+    normalized = [normalize_clean_row(r) for r in rows]
+    return write_csv(path, clean_export_columns(columns), normalized)
+
+
+def write_summary_csv(path: str, rows: Sequence[Dict[str, str]]) -> str:
+    """导出汇总表（第一志愿分布 + 志愿完整度）。"""
+    return write_csv(path, SUMMARY_COLUMNS, summary_rows(rows))

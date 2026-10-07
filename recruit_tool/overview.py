@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from typing import Any, Dict, List
 
-from .csvio import Dataset, is_blank
+from .csvio import Dataset, format_ratio, is_blank
 
 
 def build_overview(ds: Dataset) -> Dict[str, Any]:
@@ -30,7 +30,7 @@ def build_overview(ds: Dataset) -> Dict[str, Any]:
 
 
 def _ratio(part: int, total: int) -> str:
-    return "0.0%" if total == 0 else "{:.1f}%".format(part * 100.0 / total)
+    return format_ratio(part, total)
 
 
 def print_overview(ds: Dataset, stream=sys.stdout) -> Dict[str, Any]:
